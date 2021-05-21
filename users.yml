@@ -1,0 +1,16 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  tasks:
+
+    - name: Create two new IAM users
+      iam:
+        iam_type: user
+        name: "{{ item }}"
+        state: present
+        password: $ucessO2022
+        groups: Estagiarios
+      with_items:
+        - John.Constantine
+        - Leon.Kennedy
