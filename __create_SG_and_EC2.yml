@@ -1,0 +1,51 @@
+---
+- name: create ec2 instances
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+      myport: 8080
+      region: us-east-1
+      subnet: subnet-0e11582cef5058fa5
+      sg: ansible_test
+      type: t2.micro
+      number: 1
+
+  tasks:
+      - name: create security group
+        ec2_group:
+            name: "{{ sg }}"
+            description: The webservers security group
+            region: "{{ region }}"
+            rules:
+                - proto: tcp
+                  from_port: 22
+                  to_port: 22
+                  cidr_ip: 0.0.0.0/0
+                - proto: tcp
+                  from_port: "{{ myport }}"
+                  to_port: "{{ myport }}"
+                  cidr_ip: 0.0.0.0/0
+            rules_egress:
+                - proto: all
+                  cidr_ip: 0.0.0.0/0
+
+      - name: Lauching ec2 instance
+        ec2: 
+            key_name: chavessh
+            instance_type: "{{ type }}"
+            region: "{{ region }}"
+            image: ami-0747bdcabd34c712a
+            wait: yes
+            wait_timeout: 500
+            group: "{{ sg }}"
+            count: "{{ number }}"
+            vpc_subnet_id: "{{ subnet }}"
+            assign_public_ip: yes
+            state: present
+            monitoring: no
+            instance_tags:
+                Name: AnsibleTest
+                Owner: AlanSilva
+        register: ec2_out
